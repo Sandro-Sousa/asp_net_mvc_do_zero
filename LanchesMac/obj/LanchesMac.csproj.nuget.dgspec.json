@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Sandr\\source\\repos\\LanchesMac\\LanchesMac\\LanchesMac.csproj": {}
+    "C:\\Users\\Sandr\\OneDrive\\Desktop\\asp_net_mvc_do_zero\\LanchesMac\\LanchesMac.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Sandr\\source\\repos\\LanchesMac\\LanchesMac\\LanchesMac.csproj": {
+    "C:\\Users\\Sandr\\OneDrive\\Desktop\\asp_net_mvc_do_zero\\LanchesMac\\LanchesMac.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Sandr\\source\\repos\\LanchesMac\\LanchesMac\\LanchesMac.csproj",
+        "projectUniqueName": "C:\\Users\\Sandr\\OneDrive\\Desktop\\asp_net_mvc_do_zero\\LanchesMac\\LanchesMac.csproj",
         "projectName": "LanchesMac",
-        "projectPath": "C:\\Users\\Sandr\\source\\repos\\LanchesMac\\LanchesMac\\LanchesMac.csproj",
+        "projectPath": "C:\\Users\\Sandr\\OneDrive\\Desktop\\asp_net_mvc_do_zero\\LanchesMac\\LanchesMac.csproj",
         "packagesPath": "C:\\Users\\Sandr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Sandr\\source\\repos\\LanchesMac\\LanchesMac\\obj\\",
+        "outputPath": "C:\\Users\\Sandr\\OneDrive\\Desktop\\asp_net_mvc_do_zero\\LanchesMac\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Sandr\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -93,7 +93,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.103\\RuntimeIdentifierGraph.json"
         }
       }
     }
