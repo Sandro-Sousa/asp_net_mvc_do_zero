@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LanchesMac.Models
 {
@@ -13,28 +12,32 @@ namespace LanchesMac.Models
     {
         private readonly AppDbContext _context;
 
+        //injeta o contexto no construtor
         public CarrinhoCompra(AppDbContext contexto)
         {
             _context = contexto;
         }
+
+        //define as propriedades do Carrinho : Id e os Itens
         public string CarrinhoCompraId { get; set; }
         public List<CarrinhoCompraItem> CarrinhoCompraItens { get; set; }
 
         public static CarrinhoCompra GetCarrinho(IServiceProvider services)
         {
-            // define uma sessão acessando o contexto atual(tem que registrar em IServicesContext)
-            ISession session = services.GetRequiredService<IHttpContextAccessor>()?.HttpContext.Session;
+            //define uma sessão
+            ISession session =
+                services.GetRequiredService<IHttpContextAccessor>()?.HttpContext.Session;
 
-            // obtem um serviço do tipo do nosso contexto
+            //obtem um serviço do tipo do nosso contexto 
             var context = services.GetService<AppDbContext>();
 
-            // obtem ou gera o Id do carrinho
+            //obtem ou gera o Id do carrinho
             string carrinhoId = session.GetString("CarrinhoId") ?? Guid.NewGuid().ToString();
 
-            // atribuiu o id do carrinho na Sessão
+            //atribui o id do carrinho na Sessão
             session.SetString("CarrinhoId", carrinhoId);
 
-            // retorna o carrinho com o contexto atual e o Id atribuido ou obtido
+            //retorna o carrinho com o contexto e o Id atribuido ou obtido
             return new CarrinhoCompra(context)
             {
                 CarrinhoCompraId = carrinhoId
@@ -43,12 +46,10 @@ namespace LanchesMac.Models
 
         public void AdicionarAoCarrinho(Lanche lanche)
         {
-            //obttem o lanche do carrinho 
             var carrinhoCompraItem =
                     _context.CarrinhoCompraItens.SingleOrDefault(
                         s => s.Lanche.LancheId == lanche.LancheId && s.CarrinhoCompraId == CarrinhoCompraId);
 
-            //verifica se o carrinho existe e senão existir cri um 
             if (carrinhoCompraItem == null)
             {
                 carrinhoCompraItem = new CarrinhoCompraItem
@@ -57,10 +58,9 @@ namespace LanchesMac.Models
                     Lanche = lanche,
                     Quantidade = 1
                 };
-
                 _context.CarrinhoCompraItens.Add(carrinhoCompraItem);
             }
-            else //se existir o carrinho com  o item então incrementa a quantidade
+            else
             {
                 carrinhoCompraItem.Quantidade++;
             }
@@ -87,9 +87,7 @@ namespace LanchesMac.Models
                     _context.CarrinhoCompraItens.Remove(carrinhoCompraItem);
                 }
             }
-
             _context.SaveChanges();
-
             return quantidadeLocal;
         }
 
@@ -108,7 +106,6 @@ namespace LanchesMac.Models
                                  .Where(carrinho => carrinho.CarrinhoCompraId == CarrinhoCompraId);
 
             _context.CarrinhoCompraItens.RemoveRange(carrinhoItens);
-
             _context.SaveChanges();
         }
 
@@ -116,10 +113,7 @@ namespace LanchesMac.Models
         {
             var total = _context.CarrinhoCompraItens.Where(c => c.CarrinhoCompraId == CarrinhoCompraId)
                 .Select(c => c.Lanche.Preco * c.Quantidade).Sum();
-
             return total;
         }
     }
-
-
 }

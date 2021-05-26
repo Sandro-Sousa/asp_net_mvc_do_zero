@@ -1,24 +1,23 @@
 ﻿using LanchesMac.Models;
-using LanchesMac.Repositories;
+using LanchesMac.Repositories.Interfaces;
 using LanchesMac.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LanchesMac.Controllers
 {
     public class LancheController : Controller
     {
+        private ICategoriaRepository _categoriaRepository { get; }
         private readonly ILancheRepository _lancheRepository;
-        private readonly ICategoriaRepository _categoriaRepository;
 
-        public LancheController(ILancheRepository lancheRepository, 
-            ICategoriaRepository categoriaRepository)
+        public LancheController(ICategoriaRepository categoriaRepository, 
+            ILancheRepository lancheRepository)
         {
-            _lancheRepository = lancheRepository;
             _categoriaRepository = categoriaRepository;
+            _lancheRepository = lancheRepository;
         }
 
         public IActionResult List(string categoria)
@@ -40,15 +39,15 @@ namespace LanchesMac.Controllers
                 //else
                 //    lanches = _lancheRepository.Lanches.Where(p => p.Categoria.CategoriaNome.Equals("Natural")).OrderBy(p => p.Nome);
                 ////////////////////////////////////////////////////////////////////////////////////
-
+                
                 lanches = _lancheRepository.Lanches
-                           .Where(p => p.Categoria.CategoriaNome.Equals(categoria))
+                           .Where(p=> p.Categoria.CategoriaNome.Equals(categoria))  
                            .OrderBy(p => p.Nome);
 
                 categoriaAtual = categoria;
             }
 
-            var lancheListViewModel = new LanchesListViewModel
+            var lancheListViewModel = new LancheListViewModel
             {
                 Lanches = lanches,
                 CategoriaAtual = categoriaAtual
@@ -56,7 +55,6 @@ namespace LanchesMac.Controllers
 
             return View(lancheListViewModel);
         }
-
         public ViewResult Details(int lancheId)
         {
             var lanche = _lancheRepository.Lanches.FirstOrDefault(d => d.LancheId == lancheId);
@@ -66,23 +64,23 @@ namespace LanchesMac.Controllers
             }
             return View(lanche);
         }
-
-        public IActionResult Search(string searchString)
+        public ViewResult Search(string searchString)
         {
             string _searchString = searchString;
             IEnumerable<Lanche> lanches;
-            string _categoriaAtual = string.Empty;
+            string currentCategory = string.Empty;
 
             if (string.IsNullOrEmpty(_searchString))
             {
-                lanches = _lancheRepository.Lanches.OrderBy(l => l.LancheId);
+                lanches = _lancheRepository.Lanches.OrderBy(p => p.LancheId);
             }
             else
             {
-                lanches = _lancheRepository.Lanches.Where(l => l.Nome.ToLower().Contains(_searchString.ToLower()));
+                lanches = _lancheRepository.Lanches.Where(p => p.Nome.ToLower().Contains(_searchString.ToLower()));
             }
 
-            return View("~/Views/Lanche/List.cshtml", new LanchesListViewModel { Lanches = lanches, CategoriaAtual = "Todos os lanches" });
+            return View("~/Views/Lanche/List.cshtml", new LancheListViewModel { Lanches = lanches, CategoriaAtual = "Todos os lanches" });
         }
+
     }
 }

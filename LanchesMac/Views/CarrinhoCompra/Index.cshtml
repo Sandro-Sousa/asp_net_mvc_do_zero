@@ -1,7 +1,7 @@
 ﻿@model CarrinhoCompraViewModel
 
 <div class="row checkoutForm">
-
+    
     <img src="~/images/Full-Cart-icon.png" />
     <div>
         <h4> Seu carrinho de compras : </h4>
@@ -47,13 +47,9 @@
             <a class="btn btn-success" asp-controller="Pedido" asp-action="Checkout">Encerrar Pedido</a>
             <a class="btn-group">
                 <a class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    Adicionar mais lanches<span class="caret"></span>
+                  Mais Lanches  <span class="caret"></span>
                 </a>
                 @await Component.InvokeAsync("CategoriaMenu")
-                @*<ul class="dropdown-menu" role="menu">
-                        <li><a asp-controller="Lanche" asp-action="List" asp-route-categoria="Normal">Normal</a></li>
-                        <li><a asp-controller="Lanche" asp-action="List" asp-route-categoria="Natural">Natural</a></li>
-                    </ul>*@
             </a>
         </div>
     </div>

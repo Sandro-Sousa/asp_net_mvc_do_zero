@@ -1,6 +1,8 @@
+using LanchesMac.Areas.Admin.Servicos;
 using LanchesMac.Context;
 using LanchesMac.Models;
 using LanchesMac.Repositories;
+using LanchesMac.Repositories.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ReflectionIT.Mvc.Paging;
 
 namespace LanchesMac
 {
@@ -25,32 +28,37 @@ namespace LanchesMac
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
-            services.AddTransient<ICategoriaRepository, CategoriaRepository>();
-            services.AddTransient<ILancheRepository, LancheRepository>();
-            services.AddTransient<IPedidoRepository, PedidoRepository>();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
-            services.AddControllers()
-
-                    .AddNewtonsoftJson(
-
-                     Opt => Opt.SerializerSettings.ReferenceLoopHandling =
-
-                        Newtonsoft.Json.ReferenceLoopHandling.Ignore
-
-                    );
+              options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+                 .AddEntityFrameworkStores<AppDbContext>()
+                 .AddDefaultTokenProviders();
 
-            services.AddScoped(cp => CarrinhoCompra.GetCarrinho(cp));
+            services.ConfigureApplicationCookie(options => options.AccessDeniedPath = "/Home/AccessDenied");
 
+            //fornece uma instancia de HttpContextAcessor
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddTransient<ILancheRepository, LancheRepository>();
+            services.AddTransient<ICategoriaRepository, CategoriaRepository>();
+            services.AddTransient<IPedidoRepository, PedidoRepository>();
+
+            services.AddScoped<RelatorioVendasService>();
+
+            //cria um objeto Scoped, ou seja um objeto que esta associado a requisição
+            //isso significa que se duas pessoas solicitarem o objeto CarrinhoCompra ao  mesmo tempo
+            //elas vão obter instâncias diferentes
+            services.AddScoped(sp => CarrinhoCompra.GetCarrinho(sp));
+
+            services.AddControllersWithViews();
+            services.AddPaging(options => {
+                options.ViewName = "Bootstrap4";
+                options.PageParameterName = "pageindex";
+            });
+
+            //configura o uso da Sessão
             services.AddMemoryCache();
             services.AddSession();
-            services.AddControllersWithViews();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,33 +71,23 @@ namespace LanchesMac
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                // The default HSTS value is 30 days. 
                 app.UseHsts();
             }
-            app.Use(async (context, next) =>
-            {
-                await next();
-                if (context.Response.StatusCode == 404)
-                {
-                    context.Request.Path = "/Admin";
-                    await next();
-                }
-            });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSession();
 
             app.UseRouting();
+            app.UseSession();
 
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-
                 endpoints.MapControllerRoute(
-                   name: "AdminArea",
-                   pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
+                    name: "AdminArea",
+                    pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
 
                 endpoints.MapControllerRoute(name: "categoriaFiltro",
                    pattern: "Lanche/{action}/{categoria?}",

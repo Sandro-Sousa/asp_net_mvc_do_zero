@@ -2,27 +2,22 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace LanchesMac.Migrations
+namespace LanchesMac.Controllers
 {
-    [AllowAnonymous]
     public class AccountController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
 
-        public AccountController(UserManager<IdentityUser> userManager,
-                                 SignInManager<IdentityUser> signInManager)
+        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signManager)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+            _signInManager = signManager;
         }
 
-        [HttpGet]
+        //implementar login, registro e logout
         public IActionResult Login(string returnUrl)
         {
             return View(new LoginViewModel()
@@ -32,7 +27,6 @@ namespace LanchesMac.Migrations
         }
 
         [HttpPost]
-        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel loginVM)
         {
             if (!ModelState.IsValid)
@@ -43,18 +37,17 @@ namespace LanchesMac.Migrations
             if (user != null)
             {
                 var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, false, false);
-
                 if (result.Succeeded)
                 {
                     if (string.IsNullOrEmpty(loginVM.ReturnUrl))
                     {
                         return RedirectToAction("Index", "Home");
                     }
-                    return RedirectToAction(loginVM.ReturnUrl);
-                    
+                    return Redirect(loginVM.ReturnUrl);
                 }
             }
-            ModelState.AddModelError("", "Usuário/Senha inválidos ou não localizados");
+
+            ModelState.AddModelError("", "Usuário/Senha inválidos ou não localizados!!");
             return View(loginVM);
         }
 
@@ -69,22 +62,25 @@ namespace LanchesMac.Migrations
         {
             if (ModelState.IsValid)
             {
-
                 var user = new IdentityUser() { UserName = registroVM.UserName };
-
                 var result = await _userManager.CreateAsync(user, registroVM.Password);
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    //// Adiciona o usuário padrão ao perfil Member
+                    await _userManager.AddToRoleAsync(user, "Member");
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    return RedirectToAction("LoggedIn", "Account");
                 }
-
             }
-
             return View(registroVM);
         }
 
+        public ViewResult LoggedIn() => View();
+
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

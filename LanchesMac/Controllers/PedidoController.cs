@@ -1,7 +1,8 @@
 ﻿using LanchesMac.Models;
-using LanchesMac.Repositories;
+using LanchesMac.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace LanchesMac.Controllers
 {
@@ -10,7 +11,7 @@ namespace LanchesMac.Controllers
         private readonly IPedidoRepository _pedidoRepository;
         private readonly CarrinhoCompra _carrinhoCompra;
 
-        public PedidoController(IPedidoRepository pedidoRepository, CarrinhoCompra carrinhoCompra) 
+        public PedidoController(IPedidoRepository pedidoRepository, CarrinhoCompra carrinhoCompra)
         {
             _pedidoRepository = pedidoRepository;
             _carrinhoCompra = carrinhoCompra;
@@ -27,15 +28,33 @@ namespace LanchesMac.Controllers
         [Authorize]
         public IActionResult Checkout(Pedido pedido)
         {
-            var items = _carrinhoCompra.GetCarrinhoCompraItens();
+            decimal precoTotalPedido = 0.0m;
+            int totalItensPedido = 0;
+
+            List<CarrinhoCompraItem> items = _carrinhoCompra.GetCarrinhoCompraItens();
+
             _carrinhoCompra.CarrinhoCompraItens = items;
 
+            //verifica se existem itens de pedidos
             if (_carrinhoCompra.CarrinhoCompraItens.Count == 0)
             {
-                ModelState.AddModelError("", "Seu carrinho esta vazio, inclua um lanche...");
+                ModelState.AddModelError("", "Seu carrinho esta vazio, que tal incluir um lanche...");
             }
 
-            if(ModelState.IsValid)
+            //calcula o total do pedido
+            foreach (var item in items)
+            {
+                totalItensPedido += item.Quantidade;
+                precoTotalPedido += (item.Lanche.Preco * item.Quantidade);
+            }
+
+            //atribui o total de itens do pedido
+            pedido.TotalItensPedido = totalItensPedido;
+
+            //atribui o total do pedido ao pedido
+            pedido.PedidoTotal = precoTotalPedido;
+
+            if (ModelState.IsValid)
             {
                 _pedidoRepository.CriarPedido(pedido);
 
@@ -45,7 +64,6 @@ namespace LanchesMac.Controllers
                 _carrinhoCompra.LimparCarrinho();
                 return View("~/Views/Pedido/CheckoutCompleto.cshtml", pedido);
             }
-
             return View(pedido);
         }
 
